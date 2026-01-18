@@ -17,20 +17,20 @@ export default {
 
 /* 全局滚动条样式（适用于 H5） */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.05);
-  border-radius: 4px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3a86ff;
-  border-radius: 4px;
+  background: #1e5abf;
+  border-radius: 2px;
 }
 /* Firefox */
-* {
+page {
   scrollbar-width: thin;
-  scrollbar-color: #3a86ff rgba(255,255,255,0.05);
+  scrollbar-color: #1e5abf rgba(255,255,255,0.02);
 }
 </style>
