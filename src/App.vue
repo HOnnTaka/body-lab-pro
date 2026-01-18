@@ -1,15 +1,15 @@
 <script>
 export default {
   onLaunch: function () {
-    console.log('App Launch')
+    console.log("App Launch");
   },
   onShow: function () {
-    console.log('App Show')
+    console.log("App Show");
   },
   onHide: function () {
-    console.log('App Hide')
+    console.log("App Hide");
   },
-}
+};
 </script>
 
 <style>
@@ -21,7 +21,7 @@ export default {
   height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.02);
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb {
@@ -30,7 +30,8 @@ export default {
 }
 /* Firefox */
 page {
+  background-color: #0f1115;
   scrollbar-width: thin;
-  scrollbar-color: #1e5abf rgba(255,255,255,0.02);
+  scrollbar-color: #1e5abf rgba(255, 255, 255, 0.02);
 }
 </style>
