@@ -28,10 +28,8 @@ export default {
   background: #1e5abf;
   border-radius: 2px;
 }
-/* Firefox */
-page {
+
+page{
   background-color: #0f1115;
-  scrollbar-width: thin;
-  scrollbar-color: #1e5abf rgba(255, 255, 255, 0.02);
 }
 </style>

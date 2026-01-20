@@ -14,9 +14,20 @@ export function useBodySliders() {
     { key: 'advanced', label: '高级' }
   ];
   
+  // 内部：获取当前所有参数的归一化值 (-1 到 1)
+  const getParams = () => {
+    const params = {};
+    simpleSliders.forEach(s => {
+      // Gender 0(Min) 50(Base) 100(Max) -> -1 to 1
+      // Others 0(Min) 50(Base) 100(Max) -> -1 to 1
+      params[s.key] = (s.value - 50) / 50;
+    });
+    return params;
+  };
+
   // 简易模式滑块
   const simpleSliders = reactive([
-    { key: 'gender', label: '性像', value: 0 },
+    { key: 'gender', label: '性像', value: 50 }, // 默认值改为 50
     { key: 'height', label: '骨像', value: 50 },
     { key: 'weight', label: '量像', value: 50 },
     { key: 'muscle', label: '塑像', value: 50 },
@@ -30,12 +41,8 @@ export function useBodySliders() {
     activeSlider.value = slider.key;
     tooltipLeft.value = `${value}%`;
     
-    if (!model?.updateBlendShape) return;
-    // gender 是 0-100 映射到 0-1，其他是 0-100 映射到 -1 到 1
-    const normalized = slider.key === 'gender' 
-      ? value / 100 
-      : (value - 50) / 50;
-    model.updateBlendShape(slider.key, normalized);
+    if (!model?.updateBodyMorphs) return;
+    model.updateBodyMorphs(getParams());
   };
   
   // 滑块拖动结束
@@ -43,32 +50,24 @@ export function useBodySliders() {
     slider.value = value;
     activeSlider.value = null;
     
-    if (!model?.updateBlendShape) return;
-    const normalized = slider.key === 'gender' 
-      ? value / 100 
-      : (value - 50) / 50;
-    model.updateBlendShape(slider.key, normalized);
+    if (!model?.updateBodyMorphs) return;
+    model.updateBodyMorphs(getParams());
   };
   
   // 重置所有滑块
   const resetAll = (model) => {
     simpleSliders.forEach(s => {
-      s.value = s.key === 'gender' ? 0 : 50;
-      if (model?.updateBlendShape) {
-        model.updateBlendShape(s.key, 0);
-      }
+      s.value = 50;
     });
+    if (model?.updateBodyMorphs) {
+      model.updateBodyMorphs(getParams());
+    }
   };
   
   // 初始化模型状态（将当前滑块值同步到模型）
   const initModelState = (model) => {
-    if (!model?.updateBlendShape) return;
-    simpleSliders.forEach(s => {
-      const normalized = s.key === 'gender' 
-        ? s.value / 100 
-        : (s.value - 50) / 50;
-      model.updateBlendShape(s.key, normalized);
-    });
+    if (!model?.updateBodyMorphs) return;
+    model.updateBodyMorphs(getParams());
   };
   
   // 保存预设

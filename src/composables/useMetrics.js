@@ -44,7 +44,7 @@ const G3 = {
   
   // u=1 (Max Weight)
   c20: 122.0,  // M0 (Pure Fat)
-  c21: 97.63,  // M50 (Override: Linear blend of Fat/MuscleMax to prevent dip to 56kg)
+  c21: 56.77,  // M50 (Data: High weight gain only occurs at Low Muscle)
   c22: 73.26   // M100 (Fat + Muscle)
 };
 
@@ -83,7 +83,20 @@ export function useMetrics(sliders) {
     } else {
       const t = (sHeight - 50) / 50;
       h_H = OFFSETS.height.max.h * t;
-      w_H = OFFSETS.height.max.w * t;
+      
+      // Dynamic Weight Gain based on Body Type (Weight Slider)
+      // Tall + Skinny = Minimal Weight Gain. Tall + Heavy = Massive Weight Gain.
+      // Fits data: H 0.6 -> W 0.5 (56.5kg), W 1.0 (69.7kg), W 0 (34kg)
+      let w_Slope;
+      const wPct = sWeight / 100;
+      if (wPct <= 0.5) {
+          // 0(Min) -> 23(Base)
+          w_Slope = 0 + (23 - 0) * (wPct * 2);
+      } else {
+          // 23(Base) -> 70(Max)
+          w_Slope = 23 + (70 - 23) * ((wPct - 0.5) * 2); 
+      }
+      w_H = w_Slope * t;
     }
 
     // Apply Proportion Slider
@@ -175,22 +188,28 @@ export function useMetrics(sliders) {
         let childWOffset = 0;
         if (sWeight < 50) childWOffset = (3.45 - 4.86) * ((50 - sWeight) / 50);
         else childWOffset = (5.59 - 4.86) * ((sWeight - 50) / 50);
-        const wChildBase = childBaseW + childWOffset;
+        // Weight Logic:
+        // Child Weight is mainly derived from Age_Min_Weight (Child Weight Slider).
+        // Plus scaled influence from Height and Proportion.
+        // Note: Adult Deltas (w_H, w_P) are large (~20kg). For Child (~5kg), we use smaller factors to avoid negative weight.
+        // Using approx 0.05 for Height and 0.03 for Proportion to provide subtle but positive correlation.
+        let rawChildW = (childBaseW + childWOffset) + (w_H * 0.05) + (w_P * 0.03);
+        const wAtChild = Math.max(0.5, rawChildW); // Safety clamp to 0.5kg
 
         // Height Logic Adjustment
-        // User Request: Age 0 -> Gender 0 effect. Height/Prop coeff 0.266.
-        // We only apply Height and Proportion deltas, scaled by 0.266.
-        const hAtChild = childBaseH + (h_H + h_P) * 0.266;
+        // User Request: Age 0 -> Gender 0 effect. Height coeff 0.266, Prop coeff 0.16.
+        const hAtChild = childBaseH + (h_H * 0.266) + (h_P * 0.16);
         
         // Interpolate H: Child -> Adult
         // t blends from 0 (Child State) to 1 (Adult State)
         finalH = hAtChild + (h - hAtChild) * t;
 
-        // Weight Logic:
-        // Child Weight is mainly derived from Age_Min_Weight (Child Weight Slider).
-        // Adult Weight is derived from W/M sliders complex grid.
-        // We blend them.
-        finalW = wChildBase + (w - wChildBase) * t;
+        // Interpolate W
+        // Weight grows roughly with the square/cube of dimensions (Height).
+        // Linear interpolation of Weight over Age consistently overestimates weight in 10-20 age range.
+        // Using Quadratic (t^2) easing for Weight blend to better match physics and ref data.
+        const tW = t * t;
+        finalW = wAtChild + (w - wAtChild) * tW;
         
         // Age Value Curve: 
         // Data analysis shows Linear relationship for 0-50 range

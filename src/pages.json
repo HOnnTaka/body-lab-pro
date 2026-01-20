@@ -19,6 +19,7 @@
     "navigationBarTextStyle": "white",
     "navigationBarTitleText": "体态实验室",
     "navigationBarBackgroundColor": "#0f1115",
-    "backgroundColor": "#0f1115"
+    "backgroundColor": "#0f1115",
+    "pageOrientation": "auto"
   }
 }

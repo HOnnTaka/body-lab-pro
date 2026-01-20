@@ -67,7 +67,8 @@ export function setupH5Touch(canvas, controller, options = {}) {
   
   const onWheel = (e) => {
     e.preventDefault();
-    controller.zoom(1 + e.deltaY * 0.001);
+    // Invert zoom direction matches Blender: Scroll Up -> Zoom In
+    controller.zoom(1 - e.deltaY * 0.001);
   };
   
   const onTouchStart = (e) => {
