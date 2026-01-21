@@ -300,7 +300,7 @@ const initThreeH5 = async () => {
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.setSize(width, height);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1; // 稍微提高曝光，增强光影对比
+    renderer.toneMappingExposure = 1.0; // 稍微提高曝光，增强光影对比
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -442,7 +442,7 @@ const onReset = () => {
 .app {
   position: relative;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background: radial-gradient(circle at 50% 40%, #2b3240 0%, #0f1115 100%);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;

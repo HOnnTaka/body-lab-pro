@@ -193,12 +193,12 @@ function processModel(gltf, resolve, reject) {
   const model = gltf.scene;
   const morphMeshes = [];
 
-  // 基础材质 - 回归平滑着色，但微调粗糙度以体现质感
+  // 基础材质 - 优化质感，增强细节表现
   const baseMaterial = new THREE.MeshStandardMaterial({
     color: 0xf0d5c8,
-    roughness: 0.56, // 0.5 是一个平衡点，既有漫反射质感又有微弱高光
-    metalness: 0.13, // 纯非金属
-    flatShading: false, // 关闭平直着色
+    roughness: 0.5, // 降低一点粗糙度，让高光更聚拢，体现肌肉起伏
+    metalness: 0.1, // 微微的金属感有助于捕捉高光
+    flatShading: false,
   });
 
   model.traverse((child) => {
@@ -220,13 +220,9 @@ function processModel(gltf, resolve, reject) {
 
       // 保留原始贴图细节
       if (child.material) {
-        if (child.material.normalMap) {
-          newMat.normalMap = child.material.normalMap;
-          newMat.normalScale.set(1, 1);
-        }
         if (child.material.aoMap) {
           newMat.aoMap = child.material.aoMap;
-          newMat.aoMapIntensity = 1.0;
+          newMat.aoMapIntensity = 1.2; // 稍微增强 AO
         }
       }
 
@@ -408,9 +404,8 @@ export function createStudioLighting(scene, camera) {
     camera.children.filter((c) => c.isLight).forEach((l) => camera.remove(l));
   }
 
-  // 1. 环境光 (Ambient) - 降低强度以恢复阴影对比度 (0.7 -> 0.35)
-  // Blender 默认视图并不是全亮的，而是通过明确的光影来表现体积。
-  scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+  // 1. 环境光 (Ambient) - 降低亮度，增加对比度
+  scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
   // 2. 取消半球光，避免色调干扰，保持纯净的灰阶/肤色
   // const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.2);
@@ -418,32 +413,30 @@ export function createStudioLighting(scene, camera) {
 
   if (camera) {
     // 3. 相机跟随三点布光 (3-Point Lighting Rig attached to Camera)
-    // 这种设置能保证无论转到哪里，模型都有良好的立体感（主光+补光），
-    // 类似 Blender Solid 视图的 "Studio" 预设。
 
-    // A. 主光 (Key Light) - 左上前方
+    // A. 主光 (Key Light) - 侧逆光/侧光能最好地表现纹理
+    // 位置：稍微偏侧面一点，光线"擦"过皮肤表面，最能显现腹肌凸起
     const keyLight = new THREE.DirectionalLight(0xffffff, 0.65);
-    keyLight.position.set(-6, 6, 6); // 位于相机右上方
+    // 恢复到较近的位置以获得更好的阴影定义，但保持侧向角度
+    keyLight.position.set(5, 3, 5);
     keyLight.castShadow = true;
 
-    // 优化阴影质量
-    keyLight.shadow.bias = -0.0001;
-    keyLight.shadow.mapSize.width = 1024;
-    keyLight.shadow.mapSize.height = 1024;
-    keyLight.shadow.radius = 2; // 软阴影
+    // 优化阴影质量 - 锐利一点的阴影有助于表现肌肉轮廓
+    keyLight.shadow.bias = -0.0001; // 稍微增加bias防止自遮挡伪影
+    keyLight.shadow.mapSize.width = 2048; // 高分辨率
+    keyLight.shadow.mapSize.height = 2048;
+    keyLight.shadow.radius = 1; // 稍微锐利一点
     camera.add(keyLight);
 
-    // B. 补光 (Fill Light) - 左上前方
-    // 弱化阴影，防止死黑，但保留体积感
-    // const fillLight = new THREE.DirectionalLight(0xedf2ff, 0.2); // 略带冷色
-    // fillLight.position.set(-3, 1, 4);
-    // camera.add(fillLight);
+    // B. 补光 (Fill Light) - 另一侧
+    const fillLight = new THREE.DirectionalLight(0xeef2ff, 0.25);
+    fillLight.position.set(-4, 0, 4);
+    camera.add(fillLight);
 
-    // C. 顶光/辅光 (Top Light) - 正上方
-    // 照亮头部和肩部，增加层次
-    const topLight = new THREE.DirectionalLight(0xffffff, 0.1);
-    topLight.position.set(0, 5, 2);
-    camera.add(topLight);
+    // C. 轮廓光 (Rim Light) - 顶部后方，勾勒肩膀
+    const rimLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    rimLight.position.set(0, 4, -2);
+    camera.add(rimLight);
   } else {
     // Fallback
     const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);

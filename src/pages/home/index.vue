@@ -92,47 +92,59 @@ const goToLab = () => {
 </script>
 
 <style scoped>
-/* 全局容器：适配 PC 居中 */
+/* 全局容器 */
 .home-container {
-  min-height: 100vh;
+  height: 100dvh; /* 强制占满视口高度 */
+  width: 100vw;
   background: #0f1115;
   display: flex;
   justify-content: center;
-  align-items: center; /* 增加在大屏时的垂直居中 */
+  align-items: center;
+  overflow: hidden; /* 禁止 body 级滚动 */
 }
 
 .home {
   width: 100%;
-  /* 基础样式不强制 max-width，由媒体查询控制 */
-  height: 100vh;
-  overflow: hidden;
+  height: 100%; /* 占满容器 */
+  overflow: hidden; /* 禁止溢出 */
   background: linear-gradient(180deg, #1a1d24 0%, #0f1115 100%);
   display: flex;
   flex-direction: column;
-  color: #fff;
   position: relative;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+  box-shadow: none;
 }
 
-/* 移动端默认样式 (通常竖屏) */
+/* 移动端适配 */
 @media screen and (max-width: 767px) {
   .home {
-    max-width: 480px;
+    max-width: 100%;
+    /* 移动端此时也是铺满的 flex column */
+  }
+
+  .disclaimer {
+    flex: 1; /* 占据剩余空间 */
+    min-height: 0; /* 关键：允许 flex 子项收缩 */
+    overflow-y: auto; /* 内部滚动 */
+    -webkit-overflow-scrolling: touch; /* 平滑滚动 */
+    border-radius: 16px 16px 0 0; /*稍微区别于卡片*/
+    margin-top: 24px; /* 增加顶部间距 */
   }
 }
 
 /* Pad 和 PC 端宽屏适配 */
 @media screen and (min-width: 768px) {
   .home {
-    max-width: min(1200px, 90vw); /* 放宽最大宽度 */
-    height: 90vh; /* 桌面端视窗感 */
+    max-width: min(1200px, 90vw);
+    height: 90vh; /* PC端视窗感 */
     max-height: 900px;
-    border-radius: 24px; /* 增加圆角 */
+    border-radius: 24px;
     border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
 
     /* Grid 布局 */
     display: grid;
-    grid-template-columns: 380px 1fr;
+    /* 改为比例布局，左侧不再固定 380px，而是和右侧一起缩放 */
+    grid-template-columns: 4fr 6fr;
     grid-template-rows: auto auto 1fr;
     grid-template-areas:
       "header list"
@@ -140,7 +152,7 @@ const goToLab = () => {
       "footer list";
     gap: 0 40px;
     padding: 40px;
-    box-sizing: border-box; /* 确保 padding 包含在尺寸内 */
+    box-sizing: border-box;
   }
 
   /* 隐藏不需要的移动端元素 */
@@ -166,16 +178,15 @@ const goToLab = () => {
   .disclaimer {
     grid-area: list;
     height: 100%;
-    overflow: hidden; /* 内部滚动 */
+    overflow-y: auto;
     background: rgba(255, 255, 255, 0.02);
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.02);
   }
 
   .disclaimer-content {
-    height: 100%;
+    height: auto;
     box-sizing: border-box;
-    /* 在大屏下让 disclaimer 里的内容也更紧凑或更好看 */
   }
 
   .footer-bar {
@@ -320,10 +331,9 @@ const goToLab = () => {
   font-weight: bold;
 }
 
+/* Disclaimer 通用样式 */
 .disclaimer {
-  flex: 1;
-  overflow-y: auto;
-  height: 100%;
+  /* PC样式已经在 media query 中定义，这里可以留空或定义基础 */
 }
 
 .disclaimer-content {
@@ -388,7 +398,7 @@ const goToLab = () => {
   text-align: center;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   flex-shrink: 0;
-  background: #0f1115; /* Ensure background to cover scrolling content if z-indexed */
+  background: #0f1115;
   z-index: 10;
 }
 
